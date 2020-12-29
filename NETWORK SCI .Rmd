@@ -1,0 +1,538 @@
+---
+title: "NETWORK SCIENCE"
+author: "DIR_TERRANCE"
+date: "12/5/2020"
+output: 
+  html_document: 
+    toc: yes
+    toc_float: 
+      smooth_scroll: true
+    fig_caption: yes
+    number_sections: yes
+    keep_md: yes
+    df_print: kable
+    theme: lumen
+    highlight: kate
+    code_folding: hide
+    self_contained: false
+    
+---
+
+
+
+# **INTRODUCTION**
+Network Analysis is used to investigate and visualize the inter-relationship
+between entities (individuals, things).
+
+Network analysis extensively uses graph theory.
+
+# **Graph theory**: Network analysis
+Network graphs are mainly made of Nodes and edges.
+
+ * *nodes*: The entities (individual actors, people, or things) to be connected in the network. Synonyms: vertices of a graph.
+ 
+ * *edges*: The connections (interactions or relationships) between the entities.Synonyms: links, ties.
+ 
+ * *adjacency matrix*: a square matrix in which the column and row names are the nodes of the network. This is a standard data format accepted by many network analysis packages in R. Synonyms: *sociomatrices*. Within the matrix a 1 specifies that there is a link between the nodes, and a 0 indicates no link.
+ 
+ - *edge list*: a data frame containing at least two columns: one column of nodes corresponding to the source of a connection and another column of nodes that contains the target of the connection. The nodes in the data are identified by unique IDs.
+ 
+- *Node list*: a data frame with a single column listing the node IDs found in the edge list. You can also add attribute columns to the data frame such as the names of the nodes or grouping variables.
+
+- *Weighted network graph*: An edge list can also contain additional columns describing attributes of the edges such as a magnitude aspect for an edge. If the edges have a magnitude attribute the graph is considered weighted.
+
+- *Directed* and *undirected network graph*: 
+
+    + If the distinction between source and target is meaningful, the network is directed. Directed edges represent an ordering of nodes, like a relationship extending from one nodes to another, where switching the direction would change the structure of the network. The World Wide Web is an example of a directed network because hyperlinks connect one Web page to another, but not necessarily the other way around (Tyner, Briatte, and Hofmann 2017).
+
+    + If the distinction is not meaningful, the network is undirected. Undirected edges are simply links between nodes where order does not matter. Coauthorship networks represent examples of undirected networks, where nodes are authors and they are connected by an edge if they have written a publication together (Tyner, Briatte, and Hofmann 2017).
+
+
+# **Data structure** {.tabset}
+We'll use a fake demo data set containing the number of phone calls between the president of some EU countries.
+
+
+```{r}
+library(navdata)
+calls <- navdata::phone.call
+
+# Nodes are countries in the source and destination columns. The values, inthe column n.call, will be used as edges weight.
+
+head(calls, 10)
+
+str(calls)
+
+dim(calls) # dimension
+```
+
+
+To visualize the network graph, we need to create two data frames:
+ 
+    * nodes list: containing nodes labels and other nodes attributes
+    * edges list: containing the relationship between the nodes. It consists of the edge list and any additional edge attributes.
+
+
+## Create nodes list
+You  need to check for any data manipulation b4 proceeding.
+
+```{r}
+library("tidyverse")
+
+source <- calls %>% 
+  distinct(source) %>% 
+  rename(label=source) #get distinct source countries.
+
+destination <- calls %>% 
+  distinct(destination) %>% 
+  rename(label=destination) #get distinct destination countries.
+
+nodes <- full_join(source, destination, by="label")# creating nodes dataset.
+
+nodes <- nodes %>% 
+  rowid_to_column("id")
+```
+
+##  Create edges list
+Key steps:
+1. Take the phone.call data, which are already in edges list format, showing the connection between nodes. Rename the column "n.call" to "weight".
+2. Join the node IDs to the edges list data
+a. Do this for the "source" column and rename the id column that are brought over from nodes. New name: "from".
+b. Do this for the "destination" column and rename the id column. New name: "to"
+c. Select only the columns "from" and "to" in the edge data. We don't need to keep the column "source" and "destination" containing the names of countries. These information are already present in the node
+data.
+
+
+```{r}
+calls <- calls %>% 
+  rename(weight=n.call)# renaming the nc.call variable
+
+edges <- calls %>% 
+  left_join(nodes, by=c("source"="label")) %>% 
+  rename(from=id)
+
+  
+edges <- edges %>% 
+  left_join(nodes , by=c("destination"="label")) %>% 
+  rename(to=id)
+
+edges <- select(edges, from, to, weight)
+
+head(edges, 3)
+```
+
+
+
+
+# **Tools and visualization** {.tabset .tabset-fade .tabset-pills}
+
+## __igraph__
+
+```{r}
+library(igraph)
+net.igraph <- graph_from_data_frame(
+d = edges, vertices = nodes,
+directed = TRUE
+)
+
+plot(net.igraph, edge.arrow.size = 0.2)
+```
+
+
+
+```r
+plot(net.igraph, layout = layout_with_graphopt, edge.arrow.size = 0.2)
+```
+
+
+
+
+##  __Tidygraph & ggraph__
+
+_***tidygraph***_ and _***ggraph***_ represent an attempt to bring network analysis into the tidyverse workflow. For this reason tidygraph objects are masks of igraph objects.
+However using the two, you sacrifice few of the network analysis capabilities of igraph.
+When we print a _tbl_graph_ we see this __activate__ message by default on node data. we can change to edge data using __activate()__ for us to manipulate the data like rearranging etc.
+
+
+__ggraph__ have special geoms as compared to ggplot; _geom_node_ and _geom_edge_. 
+The ggraph theme can be set for a series of plots with the _set_graph_style()_ command run before the graphs are plotted or by using _theme_graph()_ in the individual plots. Here, I will use the latter method.
+
+
+
+
+
+
+
+```{r}
+library(ggraph)
+library(tidygraph)
+
+# creating a tbl_graph
+
+net_tbl <- tbl_graph(nodes=nodes, edges = edges, directed = T)
+
+# Or creating from igraph
+
+######net_tbl2 <- as_tbl_graph(net.igraph)
+
+# Printing
+net_tbl
+
+# activate the edge list
+
+net_tbl %>% 
+  activate(edges) %>% 
+  arrange(desc(weight))
+```
+
+
+
+```{r}
+# Plotting using ggraph
+net_tbl %>% 
+  ggraph(layout ="graphopt" )+
+  geom_node_point()+
+  geom_edge_link(aes(width=weight), alpha=0.8)+ 
+  scale_edge_width(range = c(1, 2))+
+  geom_node_text(aes(label=label), repel = T)+
+  labs(edge_width = "Calls") +
+  theme_graph()
+```
+
+
+##   __Interactive network graphs with visNetwork and networkD3__
+
+The htmlwidgets set of packages makes it possible to use R to create interactive JavaScript visualizations. The disadvantage of working with both visNetwork and networkD3 is that they expect edge lists and node lists to use specific nomenclature.
+ When creating an interactive plot with __visnetwork()__ you must have a node list with _'ID'_ column and an edge list with _'from' _ and _'to'_ columns, the function also plots the labels for the nodes, using the names of the cities from the “label” column in the node list.
+ 
+Visnetwork can also be build from an igraph object using _visIgraph()_ function. visNetwork() uses column names from the edge and node lists to plot network attributes instead of arguments within the function call.  This means that it is necessary to do some data manipulation to get a “width” column in the edge list. The width attribute for visNetwork() does not scale the values, so we have to do this manually. Both of these actions can be done with the mutate() function and some simple arithmetic.
+ 
+
+To make a networkD3 graph with a edge and node list requires that the IDs be a series of numeric integers that begin with 0.
+The forceNetwork() function uses a series of arguments to adjust the graph and plot network attributes. The “Links” and “Nodes” arguments provide the data for the plot in the form of edge and node lists. The function also requires “NodeID” and “Group” arguments.
+
+
+```r
+library(visNetwork)
+library(networkD3)
+
+
+edges <- mutate(edges, width = weight/3 + 1)
+
+vis_net <- visNetwork(nodes = nodes, edges = edges)
+
+vis_net %>% 
+  visIgraphLayout(layout = "layout_with_fr") %>% 
+  visEdges(arrows = "to",
+           shadow = T)
+```
+
+
+```{r}
+#subracting 1 to force the id's to begin at 0.
+
+nodes_d3 <- mutate(nodes, id = id - 1)
+edges_d3 <- mutate(edges, from = from - 1, to = to - 1)
+
+# groups help to cluster similar values to something like a family.
+
+forceNetwork(Links = edges_d3, Nodes = nodes_d3, Source = "from", Target = "to", 
+             NodeID = "label", Group = "id", Value = "weight", 
+             opacity = 2, fontSize = 16, zoom = TRUE)
+```
+
+
+
+
+
+# Remarks.
+i have tried give a preview of an introduction to network science. 
+
+# References.
+I found the following materials useful and i esed some to develop this tutorial.
+
+       1. [Introduction to network analysis](https://www.jessesadler.com/post/network-analysis-with-r/).
+       2. [Katya Ognyanova’s Network Visualization with R](http://kateto.net/network-visualization)
+       3. [http://www.springer.com/us/book/9783319238821]
+       4. [http://www.springer.com/us/book/9781493909827]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,15 @@
+`r if (knitr::is_html_output()) '
+# References {-}
+
+I found the following materials useful and i esed some to develop this tutorial.
+
+       1. [Introduction to network analysis](https://www.jessesadler.com/post/network-analysis-with-r/).
+       2. [Katya Ognyanova’s Network Visualization with R](http://kateto.net/network-visualization)
+       3. [http://www.springer.com/us/book/9783319238821]
+       4. [http://www.springer.com/us/book/9781493909827]
+
+       5.Xie Y. (2020). bookdown:Authoring Books and Techincal Documents using R Markdown R package version 1.31.
+
+       6.R Core Team(2020). R: A LAnguage and Environment for Statistical Computing. R Foundation for Statistical Computing, Vienna, Austria.
+
+'`

@@ -55,6 +55,8 @@ library("networkD3")
 library(rKenyaCensus)
 #library("ndtv")
 
+library(tidygraph)
+
 ```
 
 ### Bibliography

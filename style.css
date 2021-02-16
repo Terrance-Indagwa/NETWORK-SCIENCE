@@ -1,0 +1,29 @@
+p.caption {
+  color: #777;
+  margin-top: 10px;
+}
+p code {
+  white-space: inherit;
+}
+pre {
+  word-break: normal;
+  word-wrap: normal;
+}
+pre code {
+  white-space: inherit;
+}
+
+#header .title{
+margin-bottom: 0em;
+position: center;
+}
+
+#header h4.author {
+  margin: 0;
+  color: #664;
+}
+
+#header h4.author em{
+  font-style: normal;
+  position: center;
+}

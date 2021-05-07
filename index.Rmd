@@ -1,6 +1,6 @@
 ---
 title: "NETWORK SCIENCE"
-author: DIR-TERRANCE^[FOUNDER:RWILLS STATISTICAL COMPANY,EMAIL:consultancyrwillsstats@gmail.com]
+author: DIR-TERRANCE^[FOUNDER:RWILLS STATISTICAL COMPANY,EMAIL:consultancyrwillsstats@gmail.com, consultancyrwills@gmail.com]
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 documentclass: book
@@ -13,28 +13,23 @@ description: "This is an introduction tutorial of Network Science written in R."
 
 # Prerequisites {.unnumbered}
 
+Network science is the study of inter-relationship between entities with an aim to establish a unique or common relation between them.
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
 ```
+## WHY R
+When working with Network Analysis you have an option to choose tools designed for such purpose such as __gephi__ or __cytoscape__, but these stand alone tools are superseded with because in R;
 
-## Packages.
+    * Your work is easy to reproduce.
+    * R has advance tools for data manipulation omaking network analysis easy and efficient.
+    * There are packages designed to make your network analysis incredible eg. igraph.
+
+
+## PACKAGES
 
 Install the following packages to follow the book easily.
-
-```{r eval=FALSE}
-if(!require(devtools))(install.packages("devtools"))
-devtools::install_github("kassambara/navdata")
-install.packages("bookdown")
-install.packages("tidyverse")
-install.packages("igraph") 
-install.packages("network") 
-install.packages("sna")
-install.packages("ggraph")
-install.packages("visNetwork")
-install.packages("threejs")
-install.packages("networkD3")
-install.packages("ndtv")
-```
 
 
 ```{r eval=T}
@@ -43,7 +38,6 @@ library(bookdown)
 library(tidyverse)
 #
 
-library(rticles)
 #
 library("igraph") 
 library("network") 
@@ -52,8 +46,6 @@ library("ggraph")
 library("visNetwork")
 library("threejs")
 library("networkD3")
-library(rKenyaCensus)
-#library("ndtv")
 
 library(tidygraph)
 
@@ -69,9 +61,9 @@ knitr::write_bib(c(
 ), 'packages.bib')
 ```
 
-# **INTRODUCTION**
+# INTRODUCTION
 Network Analysis is used to investigate and visualize the inter-relationship
-between entities (individuals, things).
+between entities (individuals, things, people etc).
 
 Network analysis extensively uses graph theory.
 
@@ -94,263 +86,13 @@ Network graphs are mainly made of Nodes and edges.
 
     + If the distinction between source and target is meaningful, the network is directed. Directed edges represent an ordering of nodes, like a relationship extending from one nodes to another, where switching the direction would change the structure of the network. The World Wide Web is an example of a directed network because hyperlinks connect one Web page to another, but not necessarily the other way around (Tyner, Briatte, and Hofmann 2017).
 
-    + If the distinction is not meaningful, the network is undirected. Undirected edges are simply links between nodes where order does not matter. Coauthorship networks represent examples of undirected networks, where nodes are authors and they are connected by an edge if they have written a publication together (Tyner, Briatte, and Hofmann 2017).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    + If the distinction is not meaningful, the network is undirected. Undirected edges are simply links between nodes where order does not matter. Coauthorship networks represent examples of undirected networks, where nodes are authors and they are connected by an edge if they have written a publication together (Tyner, Briatte, and Hofmann 2017
+    
+    
+```{r}
+xfun::embed_dir(path = "/home/rwills/Rproject/NETWORKscience")
+```
+    
 
 
 

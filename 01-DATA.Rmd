@@ -1,19 +1,20 @@
 
-# Data structure{.tabset}
-We'll use a fake demo data set containing the number of phone calls between the president of some EU countries.
+# DATA STRUCTURE{.tabset}
+We'll use an hypothetical data of mpesa transaction i created, now data thats 0one of the major forms of money tranfer in Kenya and East Africa by [Safaricom PLC]("https://www.safaricom.com")
 
 
-```{r}
-counties <- rKenyaCensus::CountyGPS
 
-mpesa <- tibble(
-  source=sample(counties$CountyCode, size= 3*nrow(counties), replace = T),
-  destination= sample(counties$CountyCode, size= 3*nrow(counties), replace = T),
-  amount=sample(2:14, size= 3*nrow(counties), replace = T)
-)
-head(mpesa)
+```{r mpesa}
+mpesa <- read_csv("mpesa.csv") #reading in the data
+
 ```
-
+## Data anatomy.
+sometimes we may want to check how data looks and perform any necessary data manipulation.
+check ......for description of the data.
+```{r}
+head(mpesa)
+str(mpesa)
+```
 
 To visualize the network graph, we need to create two data frames:
  
@@ -22,35 +23,38 @@ To visualize the network graph, we need to create two data frames:
 
 
 ## Create nodes list
-You  need to check for any data manipulation b4 proceeding.
 
-```{r}
+Lets create nodes from unique counties in the data.
+```{r nodes}
 
 source <- mpesa %>% 
   distinct(source) %>% 
-  rename(county=source) #get distinct source countries.
+  rename(county=source) #get distinct source counties.
 
 destination <- mpesa %>% 
   distinct(destination) %>% 
-  rename(county=destination) #get distinct destination countries.
+  rename(county=destination) #get distinct destination counties.
 
 nodes <- full_join(source, destination, by="county")# creating nodes dataset.
 
 nodes <- nodes %>% 
   rowid_to_column("id")
+
+
 ```
 
 ##  Create edges list
 Key steps:
-1. Take the phone.call data, which are already in edges list format, showing the connection between nodes. Rename the column "n.call" to "weight".
+1. Take the mpesa data, which are already in edges list format, showing the connection between nodes. Rename the column "amount" to "weight".
 2. Join the node IDs to the edges list data
-a. Do this for the "source" column and rename the id column that are brought over from nodes. New name: "from".
-b. Do this for the "destination" column and rename the id column. New name: "to"
-c. Select only the columns "from" and "to" in the edge data. We don't need to keep the column "source" and "destination" containing the names of countries. These information are already present in the node
+
+     a. Do this for the "source" column and rename the id column that are brought over from nodes. New name: "from".
+     b. Do this for the "destination" column and rename the id column. New name: "to"
+    c. Select only the columns "from" and "to" in the edge data. We don't need to keep the column "source" and "destination" containing the names of countries. These information are already present in the node
 data.
 
 
-```{r}
+```{r edges}
 transaction <- mpesa %>% 
   rename(weight=amount)# renaming the nc.call variable
 

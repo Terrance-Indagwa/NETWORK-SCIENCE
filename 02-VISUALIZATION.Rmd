@@ -7,14 +7,42 @@ net.igraph <- graph_from_data_frame(
 d = edges, vertices = nodes,
 directed = TRUE
 )
+net.igraph
 
-plot(net.igraph, edge.arrow.size = 0.2)
+plot(net.igraph)
 ```
+The description of our igraph object ( _net.igraph_ )starts with three letters:
+
+    *D or U, for a directed or undirected graph
+    *N for a named graph (where nodes have a name attribute)
+    *W for a weighted graph (where edges have a weight attribute)
+    
+The two numbers that follow ($47$, $141$) refer to the number of nodes and edges in the graph. The description also lists node & edge attributes, for example:
+
+(v/n) - vertex-level numeric attribute
+(v/c) - vertex-level character attribute
+(e/n) - edge-level numeric attribute
+
+This concept makes it possible hence to access the various attributes of the graph making it possible manipulation.
+```{r graph_attributes}
+E(net.igraph)       # The edges of the "net.igraph" object
+V(net.igraph)       # The vertices of the "net.igraph" object
 
 
-
+```
+When we plotted net.igraph above we noticed the graph was a mess, lets try make it presentable
+First we remove loops.
+secondly we can group those alike edges.
 ```{r}
-plot(net.igraph, layout = layout_with_graphopt, edge.arrow.size = 0.2)
+net.igraph_clean <- simplify(net.igraph, remove.multiple = FALSE, remove.loops = TRUE, edge.attr.comb = list(Weight="sum", "ignore")) 
+
+plot(net.igraph_clean, 
+     layout = layout_with_graphopt,
+     edge.arrow.size = 0.2,
+     edge.color="blue",
+     vertex.color="green",
+     vertex.frame.color="#ffffff"
+     )
 ```
 
 
@@ -30,13 +58,7 @@ When we print a _tbl_graph_ we see this __activate__ message by default on node 
 __ggraph__ have special geoms as compared to ggplot; _geom_node_ and _geom_edge_. 
 The ggraph theme can be set for a series of plots with the _set_graph_style()_ command run before the graphs are plotted or by using _theme_graph()_ in the individual plots. Here, I will use the latter method.
 
-
-
-
-
-
-
-```{r}
+```{r tidygraph}
 
 # creating a tbl_graph
 
@@ -58,7 +80,7 @@ net_tbl %>%
 
 
 
-```{r}
+```{r ggraph}
 # Plotting using ggraph
 net_tbl %>% 
   ggraph(layout ="graphopt" )+
@@ -106,6 +128,53 @@ edges_d3 <- mutate(edges, from = from - 1, to = to - 1)
 
 forceNetwork(Links = edges_d3, Nodes = nodes_d3, Source = "from", Target = "to", 
              NodeID = "county", Group = "id", Value = "weight", 
-             opacity = 2, fontSize = 16, zoom = TRUE)
+             opacity = 1, fontSize = 16, zoom = TRUE)
 ```
+
+## Communities
+we go further and try find aspects such as the mean and standard deviationof a dense link like the one we are having. which will further help us find communities
+
+```{r}
+hist(edges$weight)
+mean(edges$weight)
+sd(edges$weight)
+
+#lets create a communities based on mean of the graph.
+cut.off <- mean(edges$weight) 
+net.mean <- delete_edges(net.igraph_clean,
+                         E(net.igraph_clean)[weight<cut.off])
+
+plot(net.mean, 
+     layout=layout_with_kk, 
+     edge.arrow.size=0.2) 
+
+
+# Community detection:
+comm <- cluster_edge_betweenness(net.igraph_clean)
+class(comm)
+
+V(net.igraph_clean)$community <- comm$membership
+colrs <- adjustcolor( c("gray50", "tomato", "gold", "yellowgreen"), alpha=.6)
+plot(net.igraph_clean, vertex.color=colrs[V(net.igraph_clean)$community])
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
